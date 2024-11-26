@@ -24,11 +24,9 @@ const users: User[] = [];
 wss.on('connection', (socket: WebSocket) => {
     const user: User = { id: uuidv4(), socket, room: null };
     users.push(user);
-    console.log(`User connected: ${user.id}`);
 
     socket.on('message', (message: string) => {
         const data = JSON.parse(message);
-        console.log(`Received message from ${user.id}:`, data);
 
         switch (data.type) {
             case 'create':
@@ -46,7 +44,6 @@ wss.on('connection', (socket: WebSocket) => {
     });
 
     socket.on('close', () => {
-        console.log(`User disconnected: ${user.id}`);
         const index = users.findIndex(u => u.id === user.id);
         if (index !== -1) {
             users.splice(index, 1);
@@ -62,20 +59,19 @@ function createRoom(user: User) {
     const room: Room = { id: roomId, users: [user] };
     rooms.push(room);
     user.room = roomId;
-    console.log(`Room created: ${roomId} by user ${user.id}`);
     user.socket.send(JSON.stringify({ type: 'roomCreated', payload: { roomId } }));
 }
 
 function joinRoom(user: User, roomId: string) {
     const room = rooms.find(r => r.id === roomId);
     if (room) {
-        room.users.push(user);
+        if (!room.users.some(u => u.id === user.id)) {
+            room.users.push(user);
+        }
         user.room = roomId;
-        console.log(`User ${user.id} joined room ${roomId}`);
         user.socket.send(JSON.stringify({ type: 'roomJoined', payload: { roomId } }));
         broadcastToRoom(room, { type: 'userJoined', payload: { userId: user.id } });
     } else {
-        console.log(`Room not found: ${roomId}`);
         user.socket.send(JSON.stringify({ type: 'error', payload: { message: 'Room not found' } }));
     }
 }
@@ -89,14 +85,12 @@ function leaveRoom(user: User) {
         if (index !== -1) {
             room.users.splice(index, 1);
         }
-        console.log(`User ${user.id} left room ${room.id}`);
         broadcastToRoom(room, { type: 'userLeft', payload: { userId: user.id } });
 
         if (room.users.length === 0) {
             const roomIndex = rooms.findIndex(r => r.id === room.id);
             if (roomIndex !== -1) {
                 rooms.splice(roomIndex, 1);
-                console.log(`Room ${room.id} deleted (no users left)`);
             }
         }
     }
@@ -108,7 +102,6 @@ function sendMessage(user: User, message: string) {
 
     const room = rooms.find(r => r.id === user.room);
     if (room) {
-        console.log(`Message sent in room ${room.id} by user ${user.id}: ${message}`);
         broadcastToRoom(room, {
             type: 'chat',
             payload: {
@@ -120,8 +113,8 @@ function sendMessage(user: User, message: string) {
 }
 
 function broadcastToRoom(room: Room, message: any) {
-    console.log(`Broadcasting to room ${room.id}:`, message);
     room.users.forEach(user => {
+        console.log(user.id)
         user.socket.send(JSON.stringify(message));
     });
 }
