@@ -15,6 +15,7 @@ const wss = new WebSocketServer({ server });
 
 export interface User {
     id: string;
+    username: string;
     socket: WebSocket;
     room: string | null;
 }
@@ -28,7 +29,7 @@ const rooms: Room[] = [];
 const users: User[] = [];
 
 wss.on('connection', (socket: WebSocket) => {
-    const user: User = { id: uuidv4(), socket, room: null };
+    const user: User = { id: uuidv4(), username: 'guest', socket, room: null };
     users.push(user);
 
     socket.on('message', (message: string) => {
@@ -39,7 +40,7 @@ wss.on('connection', (socket: WebSocket) => {
                 createRoom(rooms, user);
                 break;
             case 'join':
-                joinRoom(rooms, user, data.payload.roomId);
+                joinRoom(rooms, user, data.payload.username, data.payload.roomId);
                 break;
             case 'chat':
                 sendMessage(rooms, user, data.payload.message);

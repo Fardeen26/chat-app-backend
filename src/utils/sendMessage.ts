@@ -9,7 +9,7 @@ export function sendMessage(rooms: Room[], user: User, message: string) {
         broadcastToRoom(room, {
             type: 'chat',
             payload: {
-                userId: user.id,
+                username: user.username,
                 message: message
             }
         });
