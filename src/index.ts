@@ -8,6 +8,7 @@ import { createRoom } from './utils/createRoom';
 import { joinRoom } from './utils/joinRoom';
 import { sendMessage } from './utils/sendMessage';
 import { leaveRoom } from './utils/leaveRoom';
+import { sendRoomInfo } from './utils/sendRoomInfo';
 
 const app = express();
 const server = http.createServer(app);
@@ -44,6 +45,9 @@ wss.on('connection', (socket: WebSocket) => {
                 break;
             case 'chat':
                 sendMessage(rooms, user, data.payload.message);
+                break;
+            case 'rooms':
+                sendRoomInfo(user, rooms)
                 break;
             default:
                 console.log('Unknown message type:', data.type);
