@@ -10,6 +10,7 @@ export function sendMessage(rooms: Room[], user: User, message: string) {
             type: 'chat',
             payload: {
                 username: user.username,
+                user_id: user.id,
                 message: message
             }
         });

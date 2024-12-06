@@ -9,7 +9,7 @@ export function joinRoom(rooms: Room[], user: User, username: string, roomId: st
         }
         user.room = roomId;
         user.username = username;
-        user.socket.send(JSON.stringify({ type: 'roomJoined', payload: { roomId, username } }));
+        user.socket.send(JSON.stringify({ type: 'roomJoined', payload: { roomId, username, user_id: user.id } }));
         broadcastToRoom(room, { type: 'userJoined', payload: { username: user.username } });
     } else {
         user.socket.send(JSON.stringify({ type: 'error', payload: { message: 'Room not found' } }));
