@@ -26,7 +26,7 @@ export interface Room {
     users: User[];
 }
 
-const rooms: Room[] = [];
+let rooms: Room[] = [];
 const users: User[] = [];
 
 wss.on('connection', (socket: WebSocket) => {
@@ -61,6 +61,9 @@ wss.on('connection', (socket: WebSocket) => {
         }
         if (user.room) {
             leaveRoom(rooms, user);
+        }
+        if (rooms.length !== 0) {
+            rooms = [];
         }
     });
 });
